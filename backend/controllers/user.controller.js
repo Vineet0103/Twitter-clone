@@ -1,7 +1,5 @@
 import bcrypt from "bcryptjs";
 import { v2 as cloudinary } from "cloudinary";
-
-// models
 import Notification from "../models/notification.model.js";
 import User from "../models/user.model.js";
 
@@ -34,16 +32,13 @@ export const followUnfollowUser = async (req, res) => {
 		const isFollowing = currentUser.following.includes(id);
 
 		if (isFollowing) {
-			// Unfollow the user
 			await User.findByIdAndUpdate(id, { $pull: { followers: req.user._id } });
 			await User.findByIdAndUpdate(req.user._id, { $pull: { following: id } });
 
 			res.status(200).json({ message: "User unfollowed successfully" });
 		} else {
-			// Follow the user
 			await User.findByIdAndUpdate(id, { $push: { followers: req.user._id } });
 			await User.findByIdAndUpdate(req.user._id, { $push: { following: id } });
-			// Send notification to the user
 			const newNotification = new Notification({
 				type: "follow",
 				from: req.user._id,
@@ -75,7 +70,6 @@ export const getSuggestedUsers = async (req, res) => {
 			{ $sample: { size: 10 } },
 		]);
 
-		// 1,2,3,4,5,6,
 		const filteredUsers = users.filter((user) => !usersFollowedByMe.following.includes(user._id));
 		const suggestedUsers = filteredUsers.slice(0, 4);
 
@@ -115,7 +109,6 @@ export const updateUser = async (req, res) => {
 
 		if (profileImg) {
 			if (user.profileImg) {
-				// https://res.cloudinary.com/dyfqon1v6/image/upload/v1712997552/zmxorcxexpdbh8r0bkjb.png
 				await cloudinary.uploader.destroy(user.profileImg.split("/").pop().split(".")[0]);
 			}
 
@@ -142,7 +135,6 @@ export const updateUser = async (req, res) => {
 
 		user = await user.save();
 
-		// password should be null in response
 		user.password = null;
 
 		return res.status(200).json(user);
